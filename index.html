@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>CSV Table</title>
+
+  <style>
+    body {
+      font-family: "Geist", ui-sans-serif, system-ui, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      margin: 24px;
+      font-size: 14px;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+    }
+
+    .page-container {
+      display: flex;
+      justify-content: center;   /* horizontal center */
+    }
+
+    .table-wrap {
+      width: 90%;
+      overflow-x: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 2200px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+      width: 300px;
+      min-width: 300px;
+      max-width: 300px;
+      box-sizing: border-box;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    thead th {
+      background: #f5f5f5;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      background: white;
+      z-index: 2;
+    }
+
+    thead .sticky-col {
+      background: #f5f5f5;
+      z-index: 4;
+    }
+
+    th:nth-child(1), td:nth-child(1) {
+      width: 120px;
+      min-width: 120px;
+      max-width: 120px;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      width: 205px;
+      min-width: 205px;
+      max-width: 205px;
+    }
+
+    th:nth-child(3), td:nth-child(3) {
+      width: 320px;
+      min-width: 320px;
+      max-width: 320px;
+    }
+
+    th:nth-child(4), td:nth-child(4) {
+      width: 180px;
+      min-width: 180px;
+      max-width: 180px;
+    }
+
+    th:nth-child(5), td:nth-child(5) {
+      width: 150px;
+      min-width: 150px;
+      max-width: 150px;
+    }
+
+    th:nth-child(6), td:nth-child(6) {
+      width: 270px;
+      min-width: 270px;
+      max-width: 270px;
+    }
+
+    th:nth-child(7), td:nth-child(7) {
+      width: 125px;
+      min-width: 125px;
+      max-width: 125px;
+    }
+
+    th:nth-child(8), td:nth-child(8) {
+      width: 270px;
+      min-width: 270px;
+      max-width: 270px;
+    }
+
+    tbody tr:hover td {
+      background: #f7fbff;
+    }
+
+    tbody tr:hover .sticky-col {
+      background: #f7fbff;
+    }
+
+    .cell-content {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      cursor: default;
+    }
+
+    .tooltip {
+      position: fixed;
+      display: none;
+      max-width: 420px;
+      min-width: 180px;
+      padding: 10px 12px;
+      background: #111;
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      z-index: 9999;
+      pointer-events: none;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .founders-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;   /* increase spacing */
+    }
+
+    .founder-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .founder-name {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .icon-link {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding-left: 5px;
+    }
+
+    .icon-link svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .yc-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: transparent;
+      text-decoration: none;
+      color: #000;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .yc-button:hover {
+      background: #f7f7f7;
+    }
+
+    .yc-logo {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      background: #ff6600;
+      color: white;
+      font-weight: bold;
+      font-size: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>CSV Table</h2>
+
+  <div class="page-container">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr id="table-head-row"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    const tooltip = document.getElementById("tooltip");
+    let tooltipTimer = null;
+    const TOOLTIP_DELAY = 300; // ms
+    function showTooltip(event, text) {
+      if (!text) return;
+      tooltip.textContent = text;
+      tooltip.style.display = "block";
+      moveTooltip(event);
+    }
+
+    function getCompanyNameFromUrl(url) {
+      if (!url) return "";
+
+      try {
+        return url.split("/").filter(Boolean).pop(); // returns "deepgrove-ai"
+      } catch {
+        return "";
+      }
+    }
+
+    function buildYCButton(td, url, companyName) {
+      if (!url) {
+        buildNormalCell(td, companyName);
+        return;
+      }
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noreferrer";
+      a.className = "yc-button";
+
+      const logo = document.createElement("div");
+      logo.className = "yc-logo";
+      logo.textContent = "Y";
+
+      const text = document.createElement("span");
+      text.textContent = companyName;
+
+      a.appendChild(logo);
+      a.appendChild(text);
+
+      td.appendChild(a);
+    }
+
+    function moveTooltip(event) {
+      const offset = 14;
+      let left = event.clientX + offset;
+      let top = event.clientY + offset;
+
+      const rect = tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      if (left + rect.width > viewportWidth - 12) {
+        left = event.clientX - rect.width - offset;
+      }
+
+      if (top + rect.height > viewportHeight - 12) {
+        top = event.clientY - rect.height - offset;
+      }
+
+      tooltip.style.left = left + "px";
+      tooltip.style.top = top + "px";
+    }
+
+    function hideTooltip() {
+      tooltip.style.display = "none";
+    }
+
+    function buildMultiLineCell(td, text) {
+      const values = splitMultiValue(text);
+
+      if (!values.length) {
+        buildNormalCell(td, text);
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.style.display = "flex";
+      wrapper.style.flexDirection = "column";
+      wrapper.style.gap = "6px";
+
+      values.forEach(val => {
+        const span = document.createElement("span");
+        span.className = "cell-content";
+        span.textContent = val;
+        attachTooltipIfTruncated(span, val);
+        wrapper.appendChild(span);
+      });
+
+      td.appendChild(wrapper);
+    }
+
+    function attachTooltipIfTruncated(element, text, withDelay = false) {
+      element.addEventListener("mouseenter", (e) => {
+        if (element.scrollWidth <= element.clientWidth) return;
+
+        if (withDelay) {
+          tooltipTimer = setTimeout(() => {
+            showTooltip(e, text);
+          }, TOOLTIP_DELAY);
+        } else {
+          showTooltip(e, text);
+        }
+      });
+
+      element.addEventListener("mousemove", (e) => {
+        if (tooltip.style.display === "block") {
+          moveTooltip(e);
+        }
+      });
+
+      element.addEventListener("mouseleave", () => {
+        clearTimeout(tooltipTimer);
+        hideTooltip();
+      });
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    }
+
+    function normalizeHeader(h) {
+      return String(h || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s\-]+/g, "_");
+    }
+
+    function isProbablyUrl(value) {
+      const v = String(value || "").trim();
+      return !!v && (
+        /^https?:\/\//i.test(v) ||
+        /linkedin\.com/i.test(v) ||
+        /(twitter\.com|x\.com)/i.test(v)
+      );
+    }
+
+    function looksLikeLinkedIn(url) {
+      return /linkedin\.com/i.test(String(url || "").trim());
+    }
+
+    function looksLikeTwitter(url) {
+      return /(twitter\.com|x\.com)/i.test(String(url || "").trim());
+    }
+
+    function normalizeUrl(url) {
+      const v = String(url || "").trim();
+      if (!v) return "";
+      if (/^https?:\/\//i.test(v)) return v;
+      if (/^(linkedin\.com|www\.linkedin\.com)/i.test(v)) return "https://" + v;
+      if (/^(twitter\.com|www\.twitter\.com|x\.com|www\.x\.com)/i.test(v)) return "https://" + v;
+      return v;
+    }
+
+
+    function safeJsonParse(value) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return null;
+      }
+    }
+
+    function cleanValue(value) {
+      return String(value || "").trim().replace(/^"(.*)"$/, "$1").trim();
+    }
+
+    function splitMultiValue(value) {
+      const raw = cleanValue(value);
+      if (!raw) return [];
+
+      const parsed = safeJsonParse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(v => typeof v === "string" ? v.trim() : JSON.stringify(v));
+      }
+
+      if (typeof parsed === "object" && parsed !== null) {
+        return [JSON.stringify(parsed)];
+      }
+
+      if (raw.includes("\n")) {
+        return raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      }
+
+      if (raw.includes(";")) {
+        return raw.split(";").map(s => s.trim()).filter(Boolean);
+      }
+
+      if (raw.includes(" | ")) {
+        return raw.split(" | ").map(s => s.trim()).filter(Boolean);
+      }
+
+      return [raw];
+    }
+
+    function extractUrlsFromText(text) {
+      const matches = String(text || "").match(/https?:\/\/[^\s,;]+/g);
+      return matches || [];
+    }
+
+    function stripUrls(text) {
+      return String(text || "")
+        .replace(/https?:\/\/[^\s,;]+/g, "")
+        .replace(/\(\s*\)/g, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/\s+[|,-]\s*$/g, "")
+        .trim();
+    }
+
+    function createLinkedInIcon() {
+      const a = document.createElement("a");
+      a.className = "icon-link";
+      a.target = "_blank";
+      a.rel = "noreferrer";
+
+      a.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <!-- blue background -->
+          <rect width="24" height="24" rx="4" fill="#0A66C2"></rect>
+
+          <!-- white "in" -->
+          <path fill="#ffffff" d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A2 2 0 1 0 5.3 7a2 2 0 0 0-.05-4ZM20.44 12.36c0-3.46-1.84-5.07-4.3-5.07a3.73 3.73 0 0 0-3.35 1.84V8.5H9.41c.04.42 0 11.5 0 11.5h3.38v-6.42c0-.34.02-.68.12-.92.27-.68.87-1.38 1.88-1.38 1.33 0 1.86 1.01 1.86 2.5V20H20V13.4c0-.35.02-.69.02-1.04Z"/>
+        </svg>
+      `;
+
+      return a;
+    }
+
+    function createTwitterIcon() {
+      const a = document.createElement("a");
+      a.className = "icon-link";
+      a.target = "_blank";
+      a.rel = "noreferrer";
+
+      a.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <path fill="#000000" d="M18.244 2H21.5l-7.227 8.26L22.75 22h-6.594l-5.16-6.746L4.99 22H1.73l7.73-8.83L1.25 2h6.594l4.66 6.156L18.244 2zm-1.158 18h1.82L7.09 3.99H5.13L17.086 20z"/>
+        </svg>
+      `;
+
+      return a;
+    }
+
+    function buildNormalCell(td, text) {
+      const span = document.createElement("span");
+      span.className = "cell-content";
+      span.textContent = text || "";
+      attachTooltipIfTruncated(span, text || "");
+      td.appendChild(span);
+    }
+
+    function firstHeaderIndex(headers, matcher) {
+      for (let i = 0; i < headers.length; i++) {
+        if (matcher(normalizeHeader(headers[i]))) return i;
+      }
+      return -1;
+    }
+
+    function getColumnIndexes(headers) {
+      return {
+        founders: firstHeaderIndex(headers, h =>
+          h === "founders" ||
+          h === "founder" ||
+          h === "founder_names" ||
+          h === "founders_names" ||
+          h === "founder_name"
+        ),
+        linkedin: firstHeaderIndex(headers, h =>
+          h === "linkedin" ||
+          h === "linkedins" ||
+          h === "linkedin_url" ||
+          h === "linkedin_urls" ||
+          h === "linkedin_profile" ||
+          h === "linkedin_profiles" ||
+          h === "founder_linkedin" ||
+          h === "founders_linkedin" ||
+          h === "founder_linkedin_url" ||
+          h === "founders_linkedin_url" ||
+          h === "founder_linkedin_profile" ||
+          h === "founders_linkedin_profile"
+        ),
+        twitter: firstHeaderIndex(headers, h =>
+          h === "twitter" ||
+          h === "twitters" ||
+          h === "twitter_url" ||
+          h === "twitter_urls" ||
+          h === "twitter_profile" ||
+          h === "twitter_profiles" ||
+          h === "x" ||
+          h === "x_url" ||
+          h === "x_profile" ||
+          h === "founder_twitter" ||
+          h === "founders_twitter" ||
+          h === "founder_twitter_url" ||
+          h === "founders_twitter_url" ||
+          h === "founder_x" ||
+          h === "founders_x"
+        )
+      };
+    }
+
+    function parseFounders(foundersValue, linkedinValue, twitterValue) {
+      const founderNames = splitMultiValue(foundersValue);
+      const linkedinList = splitMultiValue(linkedinValue);
+      const twitterList = splitMultiValue(twitterValue);
+
+      const maxLen = Math.max(founderNames.length, linkedinList.length, twitterList.length, 1);
+      const founders = [];
+
+      for (let i = 0; i < maxLen; i++) {
+        let rawName = founderNames[i] || "";
+        let linkedin = linkedinList[i] || "";
+        let twitter = twitterList[i] || "";
+
+        const urlsInName = extractUrlsFromText(rawName);
+        for (const url of urlsInName) {
+          if (!linkedin && /linkedin\.com/i.test(url)) linkedin = url;
+          else if (!twitter && /(twitter\.com|x\.com)/i.test(url)) twitter = url;
+        }
+
+        rawName = stripUrls(rawName);
+
+        linkedin = normalizeUrl(linkedin);
+        twitter = normalizeUrl(twitter);
+
+        founders.push({
+          name: rawName,
+          linkedin: isProbablyUrl(linkedin) ? linkedin : "",
+          twitter: isProbablyUrl(twitter) ? twitter : ""
+        });
+      }
+
+      return founders.filter(f => f.name || f.linkedin || f.twitter);
+    }
+
+    function buildFoundersCell(td, row, columnIndexes) {
+      const foundersValue = columnIndexes.founders >= 0 ? (row[columnIndexes.founders] ?? "") : "";
+      const linkedinValue = columnIndexes.linkedin >= 0 ? (row[columnIndexes.linkedin] ?? "") : "";
+      const twitterValue = columnIndexes.twitter >= 0 ? (row[columnIndexes.twitter] ?? "") : "";
+
+      const founders = parseFounders(foundersValue, linkedinValue, twitterValue);
+
+      if (!founders.length) {
+        buildNormalCell(td, foundersValue);
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "founders-cell";
+
+      founders.forEach(founder => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "founder-row";
+
+        const name = document.createElement("span");
+        name.className = "founder-name";
+        name.textContent = founder.name || "";
+        attachTooltipIfTruncated(name, founder.name || "");
+        rowEl.appendChild(name);
+
+        if (founder.linkedin) {
+          const linkedin = createLinkedInIcon();
+          linkedin.href = founder.linkedin;
+          linkedin.title = "LinkedIn";
+          rowEl.appendChild(linkedin);
+        }
+
+        if (founder.twitter) {
+          const twitter = createTwitterIcon();
+          twitter.href = founder.twitter;
+          twitter.title = "Twitter";
+          rowEl.appendChild(twitter);
+        }
+
+        wrapper.appendChild(rowEl);
+      });
+
+      td.appendChild(wrapper);
+    }
+
+    async function loadCSV() {
+      const res = await fetch("data2.csv");
+      const text = await res.text();
+
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return;
+
+      const headers = parseCSVLine(lines[0]);
+      const rows = lines.slice(1).map(parseCSVLine);
+
+      const columnIndexes = getColumnIndexes(headers);
+      const hiddenColumns = new Set();
+      if (columnIndexes.linkedin !== -1) hiddenColumns.add(columnIndexes.linkedin);
+      if (columnIndexes.twitter !== -1) hiddenColumns.add(columnIndexes.twitter);
+      console.log("HEADERS:", headers);
+      console.log("COLUMN INDEXES:", columnIndexes);
+      console.log("FIRST ROW:", rows[0]);
+      const headRow = document.getElementById("table-head-row");
+      const tbody = document.getElementById("table-body");
+
+      if (!headRow || !tbody) {
+        console.error("Missing #table-head-row or #table-body in HTML");
+        return;
+      }
+
+      headRow.innerHTML = "";
+      tbody.innerHTML = "";
+
+      headers.forEach((header, index) => {
+        const normalized = header.trim().toLowerCase();
+
+        if (normalized === "founders_linkedin" || normalized === "founders_twitter") {
+          return;
+        }
+
+        const th = document.createElement("th");
+        th.textContent = header;
+
+        if (index === 0) th.classList.add("sticky-col");
+
+        headRow.appendChild(th);
+      });
+
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+
+        headers.forEach((header, index) => {
+          const normalized = header.trim().toLowerCase();
+
+          if (normalized === "founders_linkedin" || normalized === "founders_twitter") {
+            return;
+          }
+
+          const td = document.createElement("td");
+          if (index === 0) td.classList.add("sticky-col");
+
+          const headerName = header.toLowerCase();
+          const text = row[index] ?? "";
+
+          if (index === columnIndexes.founders) {
+            buildFoundersCell(td, row, columnIndexes);
+
+          } else if (headerName.includes("yc") || headerName.includes("link")) {
+            const companyName = getCompanyNameFromUrl(text);
+            buildYCButton(td, text, companyName);
+
+          } else if (headerName.includes("type") || headerName.includes("industry")) {
+            buildMultiLineCell(td, text);
+
+          } else if (headerName.includes("desc")) {
+            const span = document.createElement("span");
+            span.className = "cell-content";
+            span.textContent = text;
+            attachTooltipIfTruncated(span, text, true);
+            td.appendChild(span);
+
+          } else {
+            buildNormalCell(td, text);
+          }
+
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadCSV();
+  </script>
+</body>
+</html>
