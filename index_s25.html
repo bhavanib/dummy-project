@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>YC Companies</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+      padding: 32px 8% 80px;
+    }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 5px; }
+    .page-header p  { font-size: 13px; color: #999; }
+
+    .table-wrap {
+      overflow-x: scroll;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: #d0d0d0 #f5f5f5;
+    }
+    .table-wrap::-webkit-scrollbar { height: 6px; }
+    .table-wrap::-webkit-scrollbar-track { background: #f5f5f5; border-radius: 0 0 6px 6px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+    table { border-collapse: collapse; width: 100%; background: #fff; }
+
+    thead th {
+      background: #f7f7f7;
+      font-size: 12.5px; font-weight: 500; color: #888;
+      padding: 11px 16px;
+      border-bottom: 1px solid #e5e5e5;
+      text-align: left; white-space: nowrap;
+      position: sticky; top: 0; z-index: 3;
+    }
+    thead th.col-company { position: sticky; left: 0; z-index: 5; background: #f7f7f7; }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: top; font-size: 13px; color: #222;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #fafafa; }
+
+    td.col-company {
+      position: sticky; left: 0; background: #fff; z-index: 2;
+      font-weight: 600; font-size: 13.5px; color: #111;
+      border-right: 1px solid #f0f0f0;
+    }
+    tbody tr:hover td.col-company { background: #fafafa; }
+
+    .col-company  { width: 110px; min-width: 110px; }
+    .col-ycpage   { width: 130px; min-width: 130px; }
+    .col-desc     { width: 320px; min-width: 320px; }
+    .col-industry { width: 337px; min-width: 337px; }
+    .col-website  { width: 160px; min-width: 160px; }
+    .col-founders { width: 180px; min-width: 180px; }
+    .col-year     { width: 80px;  min-width: 80px; }
+    .col-hq       { width: 160px; min-width: 160px; }
+
+    /* Company logo in sticky col */
+    .company-cell { display: flex; align-items: center; gap: 8px; }
+    .company-logo {
+      width: 16px; height: 16px; border-radius: 6px;
+      background: #f0f0f0; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .company-logo img { width: 24px; height: 24px; object-fit: cover; border-radius: 6px; }
+    .company-logo-fallback { font-size: 11px; font-weight: 700; color: #888; }
+    .company-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Company pill button (for YC page col style) */
+    .company-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px 5px 7px;
+      border: 1px solid #e0e0e0; border-radius: 999px;
+      text-decoration: none; color: #222;
+      font-size: 12.5px; font-weight: 500;
+      background: #fff; transition: background 0.12s; white-space: nowrap;
+    }
+    .company-btn:hover { background: #f5f5f5; }
+    .company-btn-logo {
+      width: 16px; height: 16px; border-radius: 4px;
+      background: #e8e8e8; color: #555;
+      font-weight: 700; font-size: 11px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .company-btn-logo img { width: 16px; height: 16px; object-fit: cover; border-radius: 4px; }
+
+    /* YC pill button */
+    .yc-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px 5px 7px;
+      border: 1px solid #e0e0e0; border-radius: 999px;
+      text-decoration: none; color: #222;
+      font-size: 12.5px; font-weight: 500;
+      background: #fff; transition: background 0.12s; white-space: nowrap;
+    }
+    .yc-btn:hover { background: #f5f5f5; }
+    .yc-logo {
+      width: 16px; height: 16px; border-radius: 4px;
+      background: #f26522; color: #fff;
+      font-weight: 700; font-size: 11px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* Website pill button */
+    .website-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px 5px 7px;
+      border: 1px solid #e0e0e0; border-radius: 999px;
+      text-decoration: none; color: #222;
+      font-size: 12.5px; font-weight: 500;
+      background: #fff; transition: background 0.12s;
+      max-width: 100%; overflow: hidden;
+    }
+    .website-btn:hover { background: #f5f5f5; }
+    .website-favicon {
+      width: 16px; height: 16px; border-radius: 4px;
+      background: #0A66C2;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .website-favicon-fallback { font-size: 11px; color: #888; font-weight: 600; }
+    .website-favicon-letter { font-size: 11px; color: #fff; font-weight: 700; line-height: 1; }
+    .website-slug { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Description */
+    .desc-text {
+      font-size: 13px; color: #444; line-height: 1.55;
+      white-space: normal; word-break: break-word;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    /* Industry pills */
+    .industry-wrap { display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px; align-items: flex-start; }
+    .industry-tag {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; background: #f0f0f0; border-radius: 999px;
+      font-size: 11px; font-weight: 500; color: #333;
+      text-transform: uppercase; letter-spacing: 0.03em;
+      white-space: nowrap; line-height: 1.6;
+    }
+
+    .dash { color: #ccc; }
+
+    /* Founders */
+    .founders-wrap { display: flex; flex-direction: column; gap: 7px; }
+    .founder-row   { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .founder-name  { font-size: 13px; font-weight: 500; color: #111; }
+    .icon-link {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 16px; height: 16px; flex-shrink: 0;
+      opacity: 0.75; transition: opacity 0.12s;
+    }
+    .icon-link:hover { opacity: 1; }
+    .icon-link svg { width: 14px; height: 14px; }
+
+    /* Description tooltip */
+    .desc-tooltip {
+      position: fixed; display: none;
+      max-width: 380px; padding: 10px 14px;
+      background: #1a1a1a; color: #f5f5f5;
+      border-radius: 8px; font-size: 13px; line-height: 1.55;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      z-index: 9999; pointer-events: none;
+      white-space: normal; word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="desc-tooltip" class="desc-tooltip"></div>
+  <div class="page-header">
+    <h1 id="page-title">YC Companies</h1>
+    <p id="page-subtitle">Loading…</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-company">Company</th>
+          <th class="col-ycpage">YC Page</th>
+          <th class="col-desc">Description</th>
+          <th class="col-industry">Industry</th>
+          <th class="col-website">Company Website</th>
+          <th class="col-founders">Founders</th>
+          <th class="col-year">Founding Year</th>
+          <th class="col-hq">Headquarters</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function parseCSVLine(line) {
+      const out = []; let cur = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i], n = line[i+1];
+        if (c === '"') { if (inQ && n === '"') { cur += '"'; i++; } else inQ = !inQ; }
+        else if (c === ',' && !inQ) { out.push(cur); cur = ""; }
+        else cur += c;
+      }
+      out.push(cur); return out;
+    }
+
+    function nh(h) { return String(h||"").trim().toLowerCase().replace(/[\s\-]+/g,"_"); }
+
+    function splitMulti(v) {
+      const r = String(v||"").trim();
+      if (!r) return [];
+      if (r.includes(";")) return r.split(";").map(s=>s.trim()).filter(Boolean);
+      return [r];
+    }
+
+    function isProbablyUrl(v) {
+      v = String(v||"").trim();
+      return !!v && (/^https?:\/\//i.test(v)||/linkedin\.com/i.test(v)||/(twitter\.com|x\.com)/i.test(v));
+    }
+
+    function normalizeUrl(v) {
+      v = String(v||"").trim();
+      if (!v) return "";
+      if (/^https?:\/\//i.test(v)) return v;
+      if (/^(www\.)?(linkedin\.com)/i.test(v)) return "https://"+v;
+      if (/^(www\.)?(twitter\.com|x\.com)/i.test(v)) return "https://"+v;
+      return v;
+    }
+
+    function liIcon(href) {
+      const a = document.createElement("a");
+      a.className="icon-link"; a.href=href; a.target="_blank"; a.rel="noreferrer"; a.title="LinkedIn";
+      a.innerHTML=`<svg viewBox="0 0 24 24"><rect width="24" height="24" rx="3" fill="#0A66C2"/><path fill="#fff" d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3A2 2 0 1 0 5.3 7a2 2 0 0 0-.05-4ZM20.44 12.36c0-3.46-1.84-5.07-4.3-5.07a3.73 3.73 0 0 0-3.35 1.84V8.5H9.41c.04.42 0 11.5 0 11.5h3.38v-6.42c0-.34.02-.68.12-.92.27-.68.87-1.38 1.88-1.38 1.33 0 1.86 1.01 1.86 2.5V20H20V13.4c0-.35.02-.69.02-1.04Z"/></svg>`;
+      return a;
+    }
+
+    function twIcon(href) {
+      const a = document.createElement("a");
+      a.className="icon-link"; a.href=href; a.target="_blank"; a.rel="noreferrer"; a.title="X / Twitter";
+      a.innerHTML=`<svg viewBox="0 0 24 24"><path fill="#000" d="M18.244 2H21.5l-7.227 8.26L22.75 22h-6.594l-5.16-6.746L4.99 22H1.73l7.73-8.83L1.25 2h6.594l4.66 6.156L18.244 2zm-1.158 18h1.82L7.09 3.99H5.13L17.086 20z"/></svg>`;
+      return a;
+    }
+
+    function buildFounders(td, names, linkedins, twitters) {
+      const nameList = splitMulti(names);
+      const liList   = splitMulti(linkedins);
+      const twList   = splitMulti(twitters);
+      if (!nameList.length) { td.textContent = "—"; td.classList.add("dash"); return; }
+      const wrap = document.createElement("div");
+      wrap.className = "founders-wrap";
+      nameList.forEach((name, i) => {
+        const row = document.createElement("div");
+        row.className = "founder-row";
+        const nm = document.createElement("span");
+        nm.className = "founder-name"; nm.textContent = name.trim();
+        row.appendChild(nm);
+        const li = normalizeUrl(liList[i] || "");
+        if (isProbablyUrl(li)) row.appendChild(liIcon(li));
+        const tw = normalizeUrl(twList[i] || "");
+        if (isProbablyUrl(tw)) row.appendChild(twIcon(tw));
+        wrap.appendChild(row);
+      });
+      td.appendChild(wrap);
+    }
+
+    function getIdx(headers, matcher) {
+      for (let i = 0; i < headers.length; i++) if (matcher(nh(headers[i]))) return i;
+      return -1;
+    }
+
+    const descTooltipEl = document.getElementById("desc-tooltip");
+    let descTooltipTimer = null;
+
+    function showDescTooltip(e, text) {
+      clearTimeout(descTooltipTimer);
+      descTooltipTimer = setTimeout(() => {
+        descTooltipEl.textContent = text;
+        descTooltipEl.style.display = "block";
+        moveDescTooltip(e);
+      }, 250);
+    }
+    function moveDescTooltip(e) {
+      const offset = 14;
+      let left = e.clientX + offset, top = e.clientY + offset;
+      const rect = descTooltipEl.getBoundingClientRect();
+      if (left + rect.width > window.innerWidth - 12) left = e.clientX - rect.width - offset;
+      if (top + rect.height > window.innerHeight - 12) top = e.clientY - rect.height - offset;
+      descTooltipEl.style.left = left + "px";
+      descTooltipEl.style.top  = top  + "px";
+    }
+    function hideDescTooltip() {
+      clearTimeout(descTooltipTimer);
+      descTooltipEl.style.display = "none";
+    }
+
+    function render(csvText) {
+      const lines = csvText.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return;
+      const headers = parseCSVLine(lines[0]);
+      const rows    = lines.slice(1).map(parseCSVLine);
+
+      const I = {
+        name:     getIdx(headers, h => h === "name"),
+        ycpage:   getIdx(headers, h => h === "yc_page"),
+        batch:    getIdx(headers, h => h === "batch"),
+        industry: getIdx(headers, h => h.includes("industry")),
+        desc:     getIdx(headers, h => h.includes("desc")),
+        website:  getIdx(headers, h => h === "website"),
+        founders: getIdx(headers, h => h === "founders"),
+        linkedin: getIdx(headers, h => h.includes("linkedin")),
+        twitter:  getIdx(headers, h => h.includes("twitter")),
+        year:     getIdx(headers, h => h.includes("year") || h.includes("founding")),
+        hq:       getIdx(headers, h => h.includes("headquarter") || h.includes("location") || h === "hq"),
+      };
+
+      const batch = rows[0]?.[I.batch] || "";
+      if (batch) document.getElementById("page-title").textContent = `YC ${batch} Companies`;
+      document.getElementById("page-subtitle").textContent =
+        `${rows.length} companies · First column fixed · Hover description to expand`;
+
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      rows.forEach(row => {
+        const g = idx => idx >= 0 ? (row[idx] || "") : "";
+        const tr = document.createElement("tr");
+
+        // Company name (sticky) with logo
+        const tdName = document.createElement("td");
+        tdName.className = "col-company";
+        const companyName = g(I.name) || "—";
+        const ycUrlForLogo = g(I.ycpage);
+        const companySlug = ycUrlForLogo.split("/").filter(Boolean).pop() || "";
+        const companDomain = g(I.website).replace(/^https?:\/\//, "").split("/")[0];
+
+        const cell = document.createElement("div");
+        cell.className = "company-cell";
+
+        const logoBox = document.createElement("div");
+        logoBox.className = "company-logo";
+        if (companDomain) {
+          const img = document.createElement("img");
+          img.src = `https://www.google.com/s2/favicons?domain=${companDomain}&sz=64`;
+          img.alt = "";
+          img.onerror = () => {
+            logoBox.innerHTML = "";
+            const fb = document.createElement("span");
+            fb.className = "company-logo-fallback";
+            fb.textContent = companyName[0]?.toUpperCase() || "?";
+            logoBox.appendChild(fb);
+          };
+          logoBox.appendChild(img);
+        } else {
+          const fb = document.createElement("span");
+          fb.className = "company-logo-fallback";
+          fb.textContent = companyName[0]?.toUpperCase() || "?";
+          logoBox.appendChild(fb);
+        }
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "company-name-text";
+        nameSpan.textContent = companyName;
+
+        cell.appendChild(logoBox);
+        cell.appendChild(nameSpan);
+        tdName.appendChild(cell);
+        tr.appendChild(tdName);
+
+        // YC Page pill — orange YC "Y" icon + slug
+        const tdYC = document.createElement("td");
+        tdYC.className = "col-ycpage";
+        const ycUrl = g(I.ycpage);
+        if (ycUrl) {
+          const slug = ycUrl.split("/").filter(Boolean).pop();
+          const a = document.createElement("a");
+          a.className = "yc-btn"; a.href = ycUrl; a.target = "_blank"; a.rel = "noreferrer";
+
+          const logoBox2 = document.createElement("span");
+          logoBox2.className = "yc-logo";
+          logoBox2.textContent = "Y";
+
+          const t = document.createElement("span"); t.textContent = slug;
+          a.appendChild(logoBox2); a.appendChild(t);
+          tdYC.appendChild(a);
+        }
+        tr.appendChild(tdYC);
+
+        // Description — clamp to founder count, tooltip on hover
+        const tdDesc = document.createElement("td");
+        tdDesc.className = "col-desc";
+        const p = document.createElement("p");
+        p.className = "desc-text";
+        const descText = g(I.desc) || "";
+        p.textContent = descText;
+        const founderCount = splitMulti(g(I.founders)).length || 1;
+        p.style.webkitLineClamp = Math.max(1, founderCount);
+        if (descText) {
+          p.style.cursor = "default";
+          p.addEventListener("mouseenter", e => showDescTooltip(e, descText));
+          p.addEventListener("mousemove", moveDescTooltip);
+          p.addEventListener("mouseleave", hideDescTooltip);
+        }
+        tdDesc.appendChild(p);
+        tr.appendChild(tdDesc);
+
+        // Industry pills
+        const tdInd = document.createElement("td");
+        tdInd.className = "col-industry";
+        const tags = splitMulti(g(I.industry));
+        if (tags.length) {
+          const wrap = document.createElement("div"); wrap.className = "industry-wrap";
+          tags.forEach(t => {
+            const s = document.createElement("span"); s.className = "industry-tag"; s.textContent = t;
+            wrap.appendChild(s);
+          });
+          tdInd.appendChild(wrap);
+        } else {
+          tdInd.innerHTML = `<span class="dash">—</span>`;
+        }
+        tr.appendChild(tdInd);
+
+        // Website pill button with fixed "C" blue icon
+        const tdWeb = document.createElement("td");
+        tdWeb.className = "col-website";
+        const site = g(I.website);
+        if (site) {
+          const slug = site.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+
+          const a = document.createElement("a");
+          a.className = "website-btn"; a.href = site; a.target = "_blank"; a.rel = "noreferrer";
+
+          const fav = document.createElement("div");
+          fav.className = "website-favicon";
+          const iconLetter = document.createElement("span");
+          iconLetter.className = "website-favicon-letter";
+          iconLetter.textContent = "C";
+          fav.appendChild(iconLetter);
+
+          const t = document.createElement("span");
+          t.className = "website-slug"; t.textContent = slug;
+
+          a.appendChild(fav); a.appendChild(t);
+          tdWeb.appendChild(a);
+        } else {
+          tdWeb.innerHTML = `<span class="dash">—</span>`;
+        }
+        tr.appendChild(tdWeb);
+
+        // Founders
+        const tdF = document.createElement("td");
+        tdF.className = "col-founders";
+        buildFounders(tdF, g(I.founders), g(I.linkedin), g(I.twitter));
+        tr.appendChild(tdF);
+
+        // Founding Year
+        const tdYear = document.createElement("td");
+        tdYear.className = "col-year";
+        tdYear.textContent = g(I.year) || "—";
+        tr.appendChild(tdYear);
+
+        // HQ
+        const tdHQ = document.createElement("td");
+        tdHQ.className = "col-hq";
+        tdHQ.textContent = g(I.hq) || "—";
+        tr.appendChild(tdHQ);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    fetch("yc_companies_s25.csv")
+      .then(r => r.text())
+      .then(render)
+      .catch(err => {
+        document.getElementById("page-subtitle").textContent = "Failed to load CSV: " + err;
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
