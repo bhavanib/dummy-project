@@ -187,7 +187,7 @@
 
   <div id="desc-tooltip" class="desc-tooltip"></div>
   <div class="page-header">
-    <h1 id="page-title">YC Companies</h1>
+    <!-- <h1 id="page-title">YC Companies</h1> -->
     <p id="page-subtitle">Loading…</p>
   </div>
 
@@ -331,7 +331,6 @@
       };
 
       const batch = rows[0]?.[I.batch] || "";
-      if (batch) document.getElementById("page-title").textContent = `YC ${batch} Companies`;
       document.getElementById("page-subtitle").textContent =
         `${rows.length} companies · First column fixed · Hover description to expand`;
 
