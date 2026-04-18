@@ -333,7 +333,7 @@
       const batch = rows[0]?.[I.batch] || "";
       // if (batch) document.getElementById("page-title").textContent = `YC ${batch} Companies`;
       document.getElementById("page-subtitle").textContent =
-        `${rows.length} companies · Hover description to expand`;
+        `${rows.length} companies · Hover description to expand · Scroll Left to Right for more information`;
 
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
@@ -485,7 +485,7 @@
       });
     }
 
-    fetch("yc_companies_26_winter.csv")
+    fetch("yc_companies_25_winter.csv")
       .then(r => r.text())
       .then(render)
       .catch(err => {
